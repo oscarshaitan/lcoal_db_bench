@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_db_benchmark/bench_clasess.dart';
@@ -10,6 +11,7 @@ import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sembast/sembast.dart';
 import 'package:sembast/sembast_io.dart';
+import 'package:sembast_web/sembast_web.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -107,10 +109,15 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   _createSB() async {
-    var dir = await getApplicationDocumentsDirectory();
-    await dir.create(recursive: true);
-    var dbPath = join(dir.path, 'my_database.db');
-    _db = await databaseFactoryIo.openDatabase(dbPath);
+    if (kIsWeb) {
+      var factory = databaseFactoryWeb;
+      _db = await factory.openDatabase('my_database_web.db');
+    }else{
+      var dir = await getApplicationDocumentsDirectory();
+      await dir.create(recursive: true);
+      var dbPath = join(dir.path, 'my_database.db');
+      _db = await databaseFactoryIo.openDatabase(dbPath);
+    }
   }
 
   BarChartGroupData writeGroupData(int writeSP, int writeSB) {
