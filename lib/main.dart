@@ -112,7 +112,7 @@ class _BenchmarkState extends State<Benchmark> {
     if (kIsWeb) {
       var factory = databaseFactoryWeb;
       _db = await factory.openDatabase('my_database_web.db');
-    }else{
+    } else {
       var dir = await getApplicationDocumentsDirectory();
       await dir.create(recursive: true);
       var dbPath = join(dir.path, 'my_database.db');
@@ -550,11 +550,11 @@ class _BenchmarkState extends State<Benchmark> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Text(
-                              'SB: ${deleteTimeSB}ms',
+                              'SP: ${deleteTimeSP}ms',
                               style: const TextStyle(fontSize: 24),
                             ),
                             Text(
-                              'SP: ${deleteTimeSP}ms',
+                              'SB: ${deleteTimeSB}ms',
                               style: const TextStyle(fontSize: 24),
                             ),
                           ],
@@ -1025,9 +1025,10 @@ class _BenchmarkState extends State<Benchmark> {
     _benchmarkData = _generateBenchmarkData(countOfBenchData);
 
     final stopwatch = Stopwatch()..start();
-    for (var i = 0; i < countOfBenchData; i++) {
-      _keys.add(await _store.add(_db, _benchmarkData[i].toJson()));
-    }
+
+    await Future.wait(_benchmarkData.map((element) async {
+      _keys.add(await _store.add(_db, element.toJson()));
+    }));
 
     stopwatch.stop();
 
@@ -1041,10 +1042,10 @@ class _BenchmarkState extends State<Benchmark> {
     print('readBenchmarkListSembast');
     final stopwatch = Stopwatch()..start();
 
-    for (var i = 0; i < countOfBenchData; i++) {
-      var readMap = await _store.record(_keys[i]).get(_db);
+    await Future.wait(_keys.map((key) async {
+      var readMap = await _store.record(key).get(_db);
       BenchmarkData.fromJson(readMap!);
-    }
+    }));
 
     stopwatch.stop();
 
@@ -1057,9 +1058,11 @@ class _BenchmarkState extends State<Benchmark> {
   Future<void> deleteSembast() async {
     print('deleteSembast');
     final stopwatch = Stopwatch()..start();
-    for (var i = 0; i < countOfBenchData; i++) {
-      await _store.record(_keys[i]).delete(_db);
-    }
+
+    await Future.wait(_keys.map((key) async {
+      await _store.record(key).delete(_db);
+    }));
+
     stopwatch.stop();
     setState(() {
       deleteTimeSB = stopwatch.elapsedMilliseconds;
@@ -1120,11 +1123,12 @@ class _BenchmarkState extends State<Benchmark> {
     _benchmarkData = _generateBenchmarkData(countOfBenchData);
 
     final stopwatch = Stopwatch()..start();
-    for (var i = 0; i < countOfBenchData; i++) {
-      var encodeData = jsonEncode(_benchmarkData[i].toJson());
 
-      await _sp.setString('dataKey_$i', encodeData);
-    }
+    await Future.wait(_benchmarkData.mapIndexed((index, element) async {
+      var encodeData = jsonEncode(element.toJson());
+
+      await _sp.setString('dataKey_$index', encodeData);
+    }));
 
     stopwatch.stop();
 
@@ -1134,15 +1138,15 @@ class _BenchmarkState extends State<Benchmark> {
     readBenchmarkListSharedPreferences();
   }
 
-  readBenchmarkListSharedPreferences() {
+  readBenchmarkListSharedPreferences() async {
     print('readBenchmarkListSharedPreferences');
     final stopwatch = Stopwatch()..start();
 
-    for (var i = 0; i < countOfBenchData; i++) {
-      var encodedData = _sp.getString('dataKey_$i');
+    await Future.wait(_benchmarkData.mapIndexed((index, element) async {
+      var encodedData = _sp.getString('dataKey_$index');
       var decodedData = jsonDecode(encodedData!);
       BenchmarkData.fromJson(decodedData);
-    }
+    }));
 
     stopwatch.stop();
 
@@ -1155,9 +1159,11 @@ class _BenchmarkState extends State<Benchmark> {
   Future<void> deleteBenchmarkListSharedPreferences() async {
     print('deleteBenchmarkListSharedPreferences');
     final stopwatch = Stopwatch()..start();
-    for (var i = 0; i < countOfBenchData; i++) {
-      await _sp.remove('dataKey_$i');
-    }
+
+    await Future.wait(_benchmarkData.mapIndexed((index, element) async {
+      await _sp.remove('dataKey_$index');
+    }));
+
     stopwatch.stop();
     setState(() {
       deleteTimeSP = stopwatch.elapsedMilliseconds;
