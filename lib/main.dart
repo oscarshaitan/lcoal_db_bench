@@ -90,6 +90,7 @@ class _BenchmarkState extends State<Benchmark> {
     SharedPreferences.getInstance().then((sp) {
       _sp = sp;
       spCreated = true;
+      print('SP created');
     });
 
     Hive.initFlutter().then((_) {
@@ -97,6 +98,7 @@ class _BenchmarkState extends State<Benchmark> {
         _imagesBox = box;
         setState(() {
           hiveCreated = true;
+          print('Hive created');
         });
       });
     });
@@ -104,6 +106,7 @@ class _BenchmarkState extends State<Benchmark> {
     _createSB().then((_) {
       setState(() {
         sbCreated = true;
+        print('SB created');
       });
     });
 
@@ -925,6 +928,7 @@ class _BenchmarkState extends State<Benchmark> {
 
   Future<void> imagesBenchSB() async {
     _imagesKeys.clear();
+    print('imagesBenchSB');
     setState(() {
       blocRuns = true;
     });
@@ -943,6 +947,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> readImagesBenchSB() async {
+    print('readImagesBenchSB');
     final stopwatch = Stopwatch()..start();
     await Future.wait(_imagesKeys.map((key) async {
       return (await _store.record(key).get(_db))!['bytes'];
@@ -957,6 +962,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteImagesBenchSB() async {
+    print('deleteImagesBenchSB');
     final stopwatch = Stopwatch()..start();
     await Future.wait(_imagesKeys.map((key) async {
       return await _store.record(key).delete(_db);
@@ -970,6 +976,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> imagesBenchHive() async {
+    print('imagesBenchHive');
     setState(() {
       blocRuns = true;
     });
@@ -987,6 +994,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> readImagesBenchHive() async {
+    print('readImagesBenchHive');
     final stopwatch = Stopwatch()..start();
     await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
       return _imagesBox.get('$index');
@@ -1001,6 +1009,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteImagesBenchHive() async {
+    print('deleteImagesBenchHive');
     final stopwatch = Stopwatch()..start();
     await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
       return _imagesBox.delete('$index');
@@ -1014,7 +1023,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> imagesBenchSP() async {
-
+    print('imagesBenchSP');
     setState(() {
       blocRuns = true;
     });
@@ -1031,6 +1040,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> readImagesBenchSP() async {
+    print('readImagesBenchSP');
     final stopwatch = Stopwatch()..start();
     await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
       return _sp.getStringList('Image-$index')?.map((byte) => int.parse(byte));
@@ -1045,6 +1055,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteImagesBenchSP() async {
+    print('deleteImagesBenchSP');
     final stopwatch = Stopwatch()..start();
     await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
       return await _sp.remove('Image-$index');
@@ -1061,6 +1072,7 @@ class _BenchmarkState extends State<Benchmark> {
 //region SB
 
   Future<void> sembastBenchmarkDataList() async {
+    print('sembastBenchmarkDataList');
     setState(() {
       blocRuns = true;
     });
@@ -1078,6 +1090,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   readSembastBenchmarkDataList() async {
+    print('readSembastBenchmarkDataList');
     final stopwatch = Stopwatch()..start();
 
     var readMap = await _store.record(_key).get(_db);
@@ -1091,6 +1104,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteSembastBenchmarkDataList() async {
+    print('deleteSembastBenchmarkDataList');
     final stopwatch = Stopwatch()..start();
     await _store.record(_key).delete(_db);
     stopwatch.stop();
@@ -1100,6 +1114,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> sbBenchmarkList() async {
+    print('sbBenchmarkList');
     _keys.clear();
     setState(() {
       blocRuns = true;
@@ -1121,6 +1136,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   readBenchmarkListSembast() async {
+    print('readBenchmarkListSembast');
     final stopwatch = Stopwatch()..start();
 
     await Future.wait(_keys.map((key) async {
@@ -1137,6 +1153,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteSembast() async {
+    print('deleteSembast');
     final stopwatch = Stopwatch()..start();
 
     await Future.wait(_keys.map((key) async {
@@ -1153,6 +1170,7 @@ class _BenchmarkState extends State<Benchmark> {
 
 //region SP
   Future<void> spBenchmarkDataList() async {
+    print('spBenchmarkDataList');
     setState(() {
       blocRuns = true;
     });
@@ -1171,6 +1189,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   readSharedPreferences() {
+    print('readSharedPreferences');
     final stopwatch = Stopwatch()..start();
     var encodedData = _sp.getString('determinsitic');
     var decodedData = jsonDecode(encodedData!);
@@ -1184,6 +1203,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteSharedPreferences() async {
+    print('deleteSharedPreferences');
     final stopwatch = Stopwatch()..start();
     await _sp.remove('determinsitic');
     stopwatch.stop();
@@ -1193,6 +1213,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> spBenchmarkList() async {
+    print('spBenchmarkList');
     setState(() {
       blocRuns = true;
     });
@@ -1215,6 +1236,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   readBenchmarkListSharedPreferences() async {
+    print('readBenchmarkListSharedPreferences');
     final stopwatch = Stopwatch()..start();
 
     await Future.wait(_benchmarkData.mapIndexed((index, element) async {
@@ -1232,6 +1254,7 @@ class _BenchmarkState extends State<Benchmark> {
   }
 
   Future<void> deleteBenchmarkListSharedPreferences() async {
+    print('deleteBenchmarkListSharedPreferences');
     final stopwatch = Stopwatch()..start();
 
     await Future.wait(_benchmarkData.mapIndexed((index, element) async {
