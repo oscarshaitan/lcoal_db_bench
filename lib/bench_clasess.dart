@@ -56,8 +56,6 @@ class BenchmarkData {
         sizes: (json['sizes'] as Map<String, dynamic>).cast<String, int>(),
         createdAt: DateTime.parse(json['createdAt'] as String),
         imageUrl: Uri.parse(json['imageUrl'] as String),
-        /* imageBytesList:
-            (json['imageBytesList'] as List<dynamic>).cast<List<dynamic>>().map((imageList) => imageList.cast<int>()).toList(),*/
         products: (json['products'] as List<dynamic>)
             .cast<Map<String, dynamic>>()
             .map((productJson) => Product.fromJson(productJson))
@@ -73,7 +71,6 @@ class BenchmarkData {
         'sizes': sizes,
         'createdAt': createdAt.toIso8601String(),
         'imageUrl': imageUrl.toString(),
-        /* 'imageBytesList': imageBytesList.map((imageList) => imageList.cast<int>()).toList(),*/
         'products': products.map((product) => product.toJson()).toList(),
       };
 }
