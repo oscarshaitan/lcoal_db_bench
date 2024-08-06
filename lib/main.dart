@@ -79,6 +79,10 @@ class _BenchmarkState extends State<Benchmark> {
   int readTimeHiveImages = 0;
   int deleteTimeHiveImages = 0;
 
+  int writeTimeSPImages = 0;
+  int readTimeSPImages = 0;
+  int deleteTimeSPImages = 0;
+
   bool get _canRun => !blocRuns && sbCreated && spCreated && hiveCreated;
 
   @override
@@ -105,6 +109,8 @@ class _BenchmarkState extends State<Benchmark> {
         print('SB created');
       });
     });
+
+    generateRandomImageBytesList();
     super.initState();
   }
 
@@ -120,23 +126,32 @@ class _BenchmarkState extends State<Benchmark> {
     }
   }
 
-  BarChartGroupData writeGroupData(int writeSP, int writeSB) {
+  BarChartGroupData writeGroupData([int? bar1, int? bar2, int? bar3]) {
     return BarChartGroupData(
       barsSpace: 4,
       x: 0,
       barRods: [
-        BarChartRodData(
-          toY: writeSP.toDouble(),
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5)),
-          color: Colors.green,
-          width: 32,
-        ),
-        BarChartRodData(
-          toY: writeSB.toDouble(),
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5)),
-          color: Colors.blue,
-          width: 32,
-        )
+        if (bar1 != null)
+          BarChartRodData(
+            toY: bar1.toDouble(),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5)),
+            color: Colors.green,
+            width: 32,
+          ),
+        if (bar2 != null)
+          BarChartRodData(
+            toY: bar2.toDouble(),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5)),
+            color: Colors.blue,
+            width: 32,
+          ),
+        if (bar3 != null)
+          BarChartRodData(
+            toY: bar3.toDouble(),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(5), topRight: Radius.circular(5)),
+            color: Colors.orange,
+            width: 32,
+          )
       ],
     );
   }
@@ -241,7 +256,28 @@ class _BenchmarkState extends State<Benchmark> {
                               ),
                             ),
                           ],
-                        )
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 10,
+                              height: 10,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'SP',
+                              style: TextStyle(
+                                color: Color(0xff757391),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
                       ]),
                       Expanded(
                         child: Stack(
@@ -303,6 +339,10 @@ class _BenchmarkState extends State<Benchmark> {
                             'Hive: ${writeTimeHiveImages}ms',
                             style: const TextStyle(fontSize: 24),
                           ),
+                          Text(
+                            'SP: ${writeTimeSPImages}ms',
+                            style: const TextStyle(fontSize: 24),
+                          ),
                         ],
                       ),
                       const Text(
@@ -320,6 +360,10 @@ class _BenchmarkState extends State<Benchmark> {
                             'Hive:  ${readTimeHiveImages}ms',
                             style: const TextStyle(fontSize: 24),
                           ),
+                          Text(
+                            'SP:  ${readTimeSPImages}ms',
+                            style: const TextStyle(fontSize: 24),
+                          ),
                         ],
                       ),
                       const Text(
@@ -335,6 +379,10 @@ class _BenchmarkState extends State<Benchmark> {
                           ),
                           Text(
                             'Hive: ${deleteTimeHiveImages}ms',
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                          Text(
+                            'SP: ${deleteTimeSPImages}ms',
                             style: const TextStyle(fontSize: 24),
                           ),
                         ],
@@ -387,6 +435,7 @@ class _BenchmarkState extends State<Benchmark> {
         ElevatedButton(
             onPressed: _canRun
                 ? () async {
+                    generateRandomImageBytesList();
                     setState(() {
                       writeTimeSBImages = 0;
                       readTimeSBImages = 0;
@@ -394,8 +443,11 @@ class _BenchmarkState extends State<Benchmark> {
                       writeTimeHiveImages = 0;
                       readTimeHiveImages = 0;
                       deleteTimeHiveImages = 0;
+                      writeTimeSPImages = 0;
+                      readTimeSPImages = 0;
+                      deleteTimeSPImages = 0;
                     });
-                    Future.wait([imagesBenchSB(), imagesBenchHive()]).then((_) {
+                    Future.wait([imagesBenchSB(), imagesBenchHive(), imagesBenchSP()]).then((_) {
                       setState(() {
                         blocRuns = false;
                       });
@@ -781,7 +833,7 @@ class _BenchmarkState extends State<Benchmark> {
       margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
       child: BarChart(
         BarChartData(
-          maxY: max(writeTimeSBImages.toDouble(), writeTimeHiveImages.toDouble()) * 1.2,
+          maxY: max(max(writeTimeSBImages.toDouble(), writeTimeHiveImages.toDouble()), writeTimeSPImages.toDouble()) * 1.2,
           titlesData: FlTitlesData(
             show: true,
             topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -800,7 +852,7 @@ class _BenchmarkState extends State<Benchmark> {
           ),
           borderData: FlBorderData(show: false),
           barGroups: [
-            writeGroupData(writeTimeSBImages, writeTimeHiveImages),
+            writeGroupData(writeTimeSBImages, writeTimeHiveImages, writeTimeSPImages),
           ],
           gridData: const FlGridData(show: false),
         ),
@@ -813,7 +865,7 @@ class _BenchmarkState extends State<Benchmark> {
       margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
       child: BarChart(
         BarChartData(
-          maxY: max(deleteTimeSBImages.toDouble(), deleteTimeHiveImages.toDouble()) * 1.2,
+          maxY: max(max(deleteTimeSBImages.toDouble(), deleteTimeHiveImages.toDouble()), deleteTimeSPImages) * 1.2,
           titlesData: FlTitlesData(
             show: true,
             topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -831,7 +883,7 @@ class _BenchmarkState extends State<Benchmark> {
             ),
           ),
           borderData: FlBorderData(show: false),
-          barGroups: [writeGroupData(deleteTimeSBImages, deleteTimeHiveImages)],
+          barGroups: [writeGroupData(deleteTimeSBImages, deleteTimeHiveImages, deleteTimeSPImages)],
           gridData: const FlGridData(show: false),
         ),
       ),
@@ -843,7 +895,7 @@ class _BenchmarkState extends State<Benchmark> {
       margin: const EdgeInsets.only(top: 16, left: 16, right: 16),
       child: BarChart(
         BarChartData(
-          maxY: max(readTimeSBImages.toDouble(), readTimeHiveImages.toDouble()) * 1.2,
+          maxY: max(max(readTimeSBImages.toDouble(), readTimeHiveImages.toDouble()), readTimeSPImages) * 1.2,
           titlesData: FlTitlesData(
             show: true,
             topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -862,7 +914,7 @@ class _BenchmarkState extends State<Benchmark> {
           ),
           borderData: FlBorderData(show: false),
           barGroups: [
-            writeGroupData(readTimeSBImages, readTimeHiveImages),
+            writeGroupData(readTimeSBImages, readTimeHiveImages, readTimeSPImages),
           ],
           gridData: const FlGridData(show: false),
         ),
@@ -881,7 +933,6 @@ class _BenchmarkState extends State<Benchmark> {
       blocRuns = true;
     });
 
-    _benchmarkImages = generateRandomImageBytesList(countOfImages);
     final stopwatch = Stopwatch()..start();
     await Future.wait(_benchmarkImages.map((image) async {
       return _imagesKeys.add(await _store.add(_db, {'bytes': image}));
@@ -968,6 +1019,52 @@ class _BenchmarkState extends State<Benchmark> {
 
     setState(() {
       deleteTimeHiveImages = stopwatch.elapsedMilliseconds;
+    });
+  }
+
+  Future<void> imagesBenchSP() async {
+    print('imagesBenchSP');
+    setState(() {
+      blocRuns = true;
+    });
+    final stopwatch = Stopwatch()..start();
+    await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
+      return await _sp.setStringList('Image-$index', image.map((byte) => '$byte').toList());
+    }));
+    stopwatch.stop();
+
+    setState(() {
+      writeTimeSPImages = stopwatch.elapsedMilliseconds;
+    });
+    readImagesBenchSP();
+  }
+
+  Future<void> readImagesBenchSP() async {
+    print('readImagesBenchSP');
+    final stopwatch = Stopwatch()..start();
+    await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
+      return _sp.getStringList('Image-$index')?.map((byte) => int.parse(byte));
+    }));
+
+    stopwatch.stop();
+
+    setState(() {
+      readTimeSPImages = stopwatch.elapsedMilliseconds;
+    });
+    deleteImagesBenchSP();
+  }
+
+  Future<void> deleteImagesBenchSP() async {
+    print('deleteImagesBenchSP');
+    final stopwatch = Stopwatch()..start();
+    await Future.wait(_benchmarkImages.mapIndexed((index, image) async {
+      return await _sp.remove('Image-$index');
+    }));
+
+    stopwatch.stop();
+
+    setState(() {
+      deleteTimeSPImages = stopwatch.elapsedMilliseconds;
     });
   }
 
@@ -1214,7 +1311,6 @@ class _BenchmarkState extends State<Benchmark> {
               sizes: sizeMap,
               createdAt: DateTime(2024, 6, 1).add(Duration(days: index)),
               imageUrl: Uri.parse('https://example.com/image.jpg'),
-              /* imageBytesList: generateRandomImageBytesList(countOfImages),*/
               products: List.generate(
                 countOfProducts,
                 (productIndex) => Product(
@@ -1228,10 +1324,10 @@ class _BenchmarkState extends State<Benchmark> {
     return benchmarkData;
   }
 
-  List<List<int>> generateRandomImageBytesList(int imageCount) {
+  generateRandomImageBytesList() {
     final random = Random();
-    final imageBytesList = List.generate(imageCount, (_) => List.generate(sizeOfImagesKB, (_) => random.nextInt(256)));
-    return imageBytesList;
+    final imageBytesList = List.generate(countOfImages, (_) => List.generate(sizeOfImagesKB, (_) => random.nextInt(256)));
+    _benchmarkImages = imageBytesList;
   }
 
 //endregion
